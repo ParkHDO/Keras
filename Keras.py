@@ -1,6 +1,6 @@
 import sys
 import cv2
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QProgressBar
 from PyQt5.QtGui import QPixmap, QImage, QFont
 from PyQt5.QtCore import QTimer
 from keras.models import load_model
@@ -24,6 +24,11 @@ class PoseClassifierApp(QWidget):
         self.result_label = QLabel()
         self.result_label.setFont(QFont("Arial", 14))
         layout.addWidget(self.result_label)
+
+        # 막대그래프 위젯 추가
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 100)
+        layout.addWidget(self.progress_bar)
 
         self.setLayout(layout)
 
@@ -54,7 +59,8 @@ class PoseClassifierApp(QWidget):
 
             # 분류 결과를 포함하여 프레임을 표시합니다.
             self.display_frame(frame)
-            self.display_result(f'자세 : {class_name[2:]} Confidence : {confidence_score:.2f}')
+            self.display_result(f'자세 : {class_name[2:]}')
+            self.update_progress(confidence_score * 100)  # 퍼센티지 값으로 변환하여 업데이트
 
     def process_frame(self, frame):
         # 분류 전에 프레임을 처리합니다. (크기 조정, 정규화 등)
@@ -75,6 +81,9 @@ class PoseClassifierApp(QWidget):
 
     def display_result(self, result):
         self.result_label.setText(result)
+
+    def update_progress(self, value):
+        self.progress_bar.setValue(value)
 
     def closeEvent(self, event):
         self.cap.release()  # 애플리케이션을 닫을 때 카메라를 해제합니다.
